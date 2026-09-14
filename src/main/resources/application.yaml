@@ -1,3 +1,9 @@
 spring:
   application:
     name: auth
+
+store:
+  jwt:
+    secretKey: ${JWT_SECRET_KEY:EBwrdOOcAIDRLON9hbJV0+O3PTdfTjgMCQIxwLH7ws8=}
+    httpOnly: ${JWT_HTTP_ONLY:true}
+    duration: ${JWT_DURATION:3600000} # 1 hour in milliseconds
