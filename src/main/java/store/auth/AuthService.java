@@ -4,7 +4,11 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import feign.FeignException;
 
 import store.account.AccountController;
 import store.account.AccountIn;
@@ -38,9 +42,15 @@ public class AuthService {
     }
 
     public String login(String email, String password) {
-        final AccountOut account = accountController.login(
-            AccountIn.builder().email(email).password(password).build()
-        ).getBody();
+        final AccountOut account;
+        try {
+            account = accountController.login(
+                AccountIn.builder().email(email).password(password).build()
+            ).getBody();
+        } catch (FeignException.Unauthorized | FeignException.BadRequest e) {
+            // account rejected the credentials: answer 401, not a 500
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
+        }
         return jwtService.generate(account, getDuration());
     }
 
